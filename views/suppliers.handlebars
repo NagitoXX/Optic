@@ -1,0 +1,14 @@
+<h1>Suppliers</h1>
+<form method="post" action="/supplier" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="name" placeholder="New supplier name" class="form-control" required>
+    <button class="btn btn-primary" type="submit">Add Supplier</button>
+  </div>
+</form>
+<ul class="list-group">
+  {{#each suppliers}}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <a href="/supplier/{{id}}">{{name}}</a>
+    </li>
+  {{/each}}
+</ul>
