@@ -1,6 +1,6 @@
 # Optic
 
-Simple application de gestion des montures pour un magasin d'optique. Elle permet de créer des fournisseurs et d'ajouter pour chacun d'eux les références de montures avec quantité, prix unitaire et nombre vendu.
+Application de gestion des montures pour un magasin d'optique. Elle permet de créer des fournisseurs et d'ajouter pour chacun d'eux les références de montures avec quantité, prix unitaire et suivi des ventes. Chaque vente décrémente automatiquement le stock et les valeurs totales sont recalculées (valeur vendue et valeur restante).
 
 ## Installation
 

@@ -63,9 +63,22 @@ app.get('/supplier/:id', (req, res) => {
     if (err || !supplier) return res.status(404).send('Not found');
     db.all('SELECT * FROM frames WHERE supplier_id = ?', [id], (err2, frames) => {
       if (err2) return res.status(500).send('DB Error');
-      const totalSold = frames.reduce((sum, f) => sum + f.sold * f.unit_price, 0);
-      const totalValue = frames.reduce((sum, f) => sum + f.quantity * f.unit_price, 0);
-      res.render('frames', { supplier, frames, totalSold, totalValue });
+      const totals = frames.reduce((acc, f) => {
+        acc.soldValue += f.sold * f.unit_price;
+        acc.remainingValue += f.quantity * f.unit_price;
+        acc.soldQty += f.sold;
+        acc.remainingQty += f.quantity;
+        return acc;
+      }, { soldValue: 0, remainingValue: 0, soldQty: 0, remainingQty: 0 });
+
+      res.render('frames', {
+        supplier,
+        frames,
+        totalSold: totals.soldValue,
+        totalRemaining: totals.remainingValue,
+        soldQty: totals.soldQty,
+        remainingQty: totals.remainingQty
+      });
     });
   });
 });
@@ -80,12 +93,15 @@ app.post('/supplier/:id/frame', (req, res) => {
 });
 
 app.post('/frame/:id/sold', (req, res) => {
-  const { sold } = req.body;
-  db.run('UPDATE frames SET sold = sold + ? WHERE id = ?', [sold, req.params.id], err => {
-    if (err) return res.status(500).send('DB Error');
-    db.get('SELECT supplier_id FROM frames WHERE id = ?', [req.params.id], (err2, row) => {
+  const sold = parseInt(req.body.sold, 10) || 0;
+  if (sold <= 0) return res.redirect('back');
+
+  db.get('SELECT quantity, supplier_id FROM frames WHERE id = ?', [req.params.id], (err, frame) => {
+    if (err || !frame) return res.status(500).send('DB Error');
+    const newQty = Math.max(frame.quantity - sold, 0);
+    db.run('UPDATE frames SET sold = sold + ?, quantity = ? WHERE id = ?', [sold, newQty, req.params.id], err2 => {
       if (err2) return res.status(500).send('DB Error');
-      res.redirect(`/supplier/${row.supplier_id}`);
+      res.redirect(`/supplier/${frame.supplier_id}`);
     });
   });
 });
